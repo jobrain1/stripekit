@@ -1,9 +1,23 @@
 const express = require('express');
 const Stripe = require('stripe');
-require('dotenv').config();
+
+// Safely load .env without crashing if file is missing
+try {
+  require('dotenv').config();
+} catch (e) {
+  // .env might not exist during npm install
+}
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Lazy-load Stripe instance (don't create during npm install)
+let stripe = null;
+function getStripe() {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return stripe;
+}
 
 // Generate a random API key
 function generateApiKey() {
@@ -35,12 +49,12 @@ router.post('/create-subscription', async (req, res) => {
 
     // Step 1: Create or get customer
     let customer;
-    const existingCustomers = await stripe.customers.list({ email, limit: 1 });
+    const existingCustomers = await getStripe().customers.list({ email, limit: 1 });
     
     if (existingCustomers.data.length > 0) {
       customer = existingCustomers.data[0];
     } else {
-      customer = await stripe.customers.create({
+      customer = await getStripe().customers.create({
         email,
         name,
         payment_method: paymentMethodId,
@@ -54,7 +68,7 @@ router.post('/create-subscription', async (req, res) => {
     const apiKey = generateApiKey();
 
     // Step 3: Update customer metadata with API key
-    await stripe.customers.update(customer.id, {
+    await getStripe().customers.update(customer.id, {
       metadata: {
         apiKey,
         plan,
@@ -72,10 +86,10 @@ router.post('/create-subscription', async (req, res) => {
       });
     }
 
-    const subscription = await stripe.subscriptions.create({
+    const subscription = await getStripe().subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
-      payment_behavior: 'error_if_incomplete',
+      payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent']
     });
 
@@ -108,7 +122,7 @@ router.post('/validate-key', async (req, res) => {
     }
 
     // Search for this API key in Stripe customer metadata
-    const customers = await stripe.customers.list({ limit: 100 });
+    const customers = await getStripe().customers.list({ limit: 100 });
     
     const customer = customers.data.find(c => 
       c.metadata && c.metadata.apiKey === apiKey
@@ -119,7 +133,7 @@ router.post('/validate-key', async (req, res) => {
     }
 
     // Check if they have an active subscription
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: customer.id,
       status: 'active',
       limit: 1
@@ -160,7 +174,7 @@ router.post('/customer-info', async (req, res) => {
     }
 
     // Find customer by API key
-    const customers = await stripe.customers.list({ limit: 100 });
+    const customers = await getStripe().customers.list({ limit: 100 });
     const customer = customers.data.find(c => 
       c.metadata && c.metadata.apiKey === apiKey
     );
@@ -170,7 +184,7 @@ router.post('/customer-info', async (req, res) => {
     }
 
     // Get their subscription
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: customer.id,
       limit: 1
     });

@@ -1,6 +1,12 @@
 const express = require('express');
 const Stripe = require('stripe');
-require('dotenv').config();
+
+// Safely load .env without crashing if file is missing
+try {
+  require('dotenv').config();
+} catch (e) {
+  // .env might not exist during npm install
+}
 
 const router = express.Router();
 

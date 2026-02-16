@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.DS_Store
+server.js
+api-subscriptions.js
+api-validate.js
+index.html
+checkout.html
+pricing.html
+test-*.js
+example.js
+RAILWAY_DEPLOYMENT_GUIDE.md
+.npmignore
+README-COMPLETE.md

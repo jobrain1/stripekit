@@ -14,7 +14,8 @@
   "scripts": {
     "test": "node test-complete.js",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "prepare": "echo 'StripeKit ready to deploy'"
   },
   "keywords": [
     "stripe",
