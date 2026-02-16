@@ -3,7 +3,15 @@ const Stripe = require('stripe');
 require('dotenv').config();
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Lazy-load Stripe instance (don't create during npm install)
+let stripe = null;
+function getStripe() {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return stripe;
+}
 
 // Generate a random API key
 function generateApiKey() {
@@ -23,7 +31,7 @@ router.post('/validate-key', async (req, res) => {
     }
 
     // Search for this API key in Stripe customer metadata
-    const customers = await stripe.customers.list({ limit: 100 });
+    const customers = await getStripe().customers.list({ limit: 100 });
     
     const customer = customers.data.find(c => 
       c.metadata && c.metadata.apiKey === apiKey
@@ -34,7 +42,7 @@ router.post('/validate-key', async (req, res) => {
     }
 
     // Check if they have an active subscription
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: customer.id,
       status: 'active',
       limit: 1
@@ -74,7 +82,7 @@ router.post('/generate-key', async (req, res) => {
     const apiKey = generateApiKey();
 
     // Store it in the customer's metadata
-    await stripe.customers.update(customerId, {
+    await getStripe().customers.update(customerId, {
       metadata: {
         apiKey: apiKey,
         createdAt: new Date().toISOString()
@@ -103,7 +111,7 @@ router.post('/customer-info', async (req, res) => {
     }
 
     // Find customer by API key
-    const customers = await stripe.customers.list({ limit: 100 });
+    const customers = await getStripe().customers.list({ limit: 100 });
     const customer = customers.data.find(c => 
       c.metadata && c.metadata.apiKey === apiKey
     );
@@ -113,7 +121,7 @@ router.post('/customer-info', async (req, res) => {
     }
 
     // Get their subscription
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: customer.id,
       limit: 1
     });
