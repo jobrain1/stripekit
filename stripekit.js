@@ -1,7 +1,7 @@
 const Stripe = require('stripe');
 
 class StripeKit {
-  constructor(stripeSecretKey, apiKey = null, validationEndpoint = 'http://localhost:3000/api/validate-key') {
+  constructor(stripeSecretKey, apiKey = null, validationEndpoint = 'https://stripekit-production.up.railway.app/api/validate-key') {
     // stripeSecretKey: Your Stripe secret key (sk_test_... or sk_live_...)
     // apiKey: Customer's StripeKit API key (sk_prod_...) - optional for development
     // validationEndpoint: URL to validate the API key against (defaults to localhost)

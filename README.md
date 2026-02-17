@@ -1,610 +1,179 @@
-# StripeKit - Simplify Stripe Integration
+# StripeKit - The Developer-First Stripe SDK
 
-> **Get your API Key here:** [https://stripekit-production.up.railway.app/](https://stripekit-production.up.railway.app/)
+[![npm version](https://img.shields.io/npm/v/stripekit-sdk.svg?style=flat-square)](https://www.npmjs.com/package/stripekit-sdk)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Pricing](https://img.shields.io/badge/Pricing-%242%2Fmo%20%2B%20Usage-green.svg?style=flat-square)](https://stripekit-production.up.railway.app/)
 
-**StripeKit** is a Node.js SDK that makes Stripe integration **10x simpler**. Stop writing boilerplate code. Start building.
+> **🚀 Get your API Key here:** [https://stripekit-production.up.railway.app/](https://stripekit-production.up.railway.app/)
 
-- ✅ Clean, intuitive API for payments, customers, and subscriptions
-- ✅ Pre-built webhook handlers (no more manual parsing)
-- ✅ Automatic data transformation (from Stripe's format to yours)
-- ✅ Built-in API key licensing (monetize your integration)
-- ✅ Works with Express, Fastify, or any Node.js framework
+**StripeKit** is a powerful Node.js wrapper that makes integrating Stripe **10x simpler**. Stop writing boilerplate code for every payment intent, customer creation, or webhook handler. Start building your product.
 
 ---
 
-## Quick Facts
+## ✨ Why StripeKit?
 
-| What | Details |
-|------|---------|
-| **What It Is** | Node.js SDK wrapper for Stripe API |
-| **What It Does** | Simplifies payment processing, subscriptions, webhooks |
-| **Who Uses It** | Developers building payment features |
-| **How It Works** | Install → Initialize → Use methods |
-| **Pricing** | $2/mo + $0.01/call |
-| **License** | MIT - Use freely |
-
----
-
-## Pricing: Flexible & Fair
-
-StripeKit uses a hybrid pricing model designed to be affordable while scaling with you.
-
-- **$2.00 Monthly Base**: A small fixed cost to support maintenance.
-- **$0.01 per Call**: Usage-based pricing for every API call made through the SDK.
-- **Fair**: Only pay for what you use. Perfect for startups and growing apps.
-
-To get started, simply purchase an API Key from our [dashboard](https://stripekit-production.up.railway.app/) and you're good to go.
+| Feature | Description |
+| :--- | :--- |
+| **📦 10x Less Code** | Replace 50 lines of Stripe boilerplate with 1 line of StripeKit. |
+| **🛡️ Type-Safeish** | Predictable inputs and outputs for every method. |
+| **🔄 Webhooks Made Easy** | No more manual signature verification or switch statements. |
+| **💰 Hybrid Pricing** | Affordable $2/mo base fee + tiny $0.01 per-call usage fee. |
+| **🚀 Production Ready** | Built-in validation, error handling, and retry logic. |
 
 ---
 
-## Installation
+## 💸 Pricing: Flexible & Fair
 
-### Option 1: From NPM (When Published)
+We believe in fair pricing for developers. Our hybrid model scales with you.
+
+- **$2.00 / month**: A small base fee to support maintenance and development.
+- **$0.01 / API Call**: You only pay for what you use.
+- **No Hidden Fees**: Transparent usage-based billing.
+
+*Perfect for startups, side projects, and scaling applications.*
+
+---
+
+## 📦 Installation
+
 ```bash
-npm install stripekit
-```
-
-### Option 2: From GitHub (Development)
-```bash
-git clone https://github.com/YOUR-USERNAME/stripekit.git
-cd stripekit
-npm install
+npm install stripekit-sdk
 ```
 
 ---
 
-## Getting Started (5 Minutes)
+## 🚀 Quick Start
 
-### Step 1: Get Your Stripe Keys
+### 1. Initialize
 
-1. Create Stripe account: https://stripe.com
-2. Get test keys: https://dashboard.stripe.com/apikeys
-3. Copy your **Secret Key** (starts with `sk_test_`)
-
-### Step 2: Initialize StripeKit
-
-**Option A: Development Mode (No License)**
 ```javascript
-const StripeKit = require('stripekit');
+const StripeKit = require('stripekit-sdk');
 
-const stripe = new StripeKit('sk_test_YOUR_KEY');
-
-// Now use it
-const customer = await stripe.createCustomer('user@example.com', 'John Doe');
-console.log(customer.id);  // cus_XXXXX
-```
-
-**Option B: With API License Key**
-```javascript
+// Initialize with your Stripe Secret Key and your StripeKit License Key
 const stripe = new StripeKit(
-  'sk_test_YOUR_KEY',
-  'sk_prod_your_license_key'  // From StripeKit purchase
+  'sk_test_YOUR_STRIPE_KEY',      // Your Stripe Secret Key
+  'sk_prod_YOUR_STRIPEKIT_KEY'    // Get this from our dashboard
 );
-
-// Same API, but validates your license
-const customer = await stripe.createCustomer('user@example.com', 'John Doe');
 ```
 
----
+### 2. Create a Customer
 
-## Core Features
-
-### 1. CUSTOMERS
-
-Create, retrieve, and manage Stripe customers.
-
-**Create Customer**
 ```javascript
-const result = await stripe.createCustomer(
-  'john@example.com',           // Email
-  'John Doe',                   // Name
-  { company: 'Acme Inc' }       // Metadata (optional)
-);
-
-console.log(result);
-// { success: true, id: 'cus_XXXXX', email: 'john@example.com' }
-```
-
-**Get Customer**
-```javascript
-const customer = await stripe.getCustomer('cus_XXXXX');
+const customer = await stripe.createCustomer('jane@example.com', 'Jane Doe', {
+  company: 'Tech Corp'
+});
 
 console.log(customer);
-// { id: 'cus_XXXXX', email: 'john@example.com', name: 'John Doe', metadata: {...} }
+// { success: true, id: 'cus_123...', email: 'jane@example.com' }
 ```
 
-**Update Customer**
+### 3. Process a Payment
+
 ```javascript
-const result = await stripe.updateCustomer('cus_XXXXX', {
-  metadata: { tier: 'premium', lastLogin: Date.now() }
-});
-
-console.log(result);
-// { success: true, id: 'cus_XXXXX' }
-```
-
----
-
-### 2. PAYMENTS
-
-Create and manage one-time payments.
-
-**Create Payment**
-```javascript
-// First, create a payment method
-const paymentMethod = await stripe.stripe.paymentMethods.create({
-  type: 'card',
-  card: { token: 'tok_visa' }  // Stripe test card
-});
-
-// Attach to customer
-await stripe.stripe.paymentMethods.attach(paymentMethod.id, {
-  customer: 'cus_XXXXX'
-});
-
-// Now create the payment
 const payment = await stripe.createPayment(
-  'cus_XXXXX',           // Customer ID
-  29.99,                 // Amount in dollars
-  'usd',                 // Currency
-  paymentMethod.id,      // Payment method
-  { orderId: '123' }     // Metadata (optional)
+  customer.id, 
+  29.99, 
+  'usd', 
+  'pm_card_visa' // Payment Method ID from frontend
 );
 
-console.log(payment);
-// { success: true, id: 'pi_XXXXX', status: 'succeeded' }
-```
-
-**Get Payment**
-```javascript
-const payment = await stripe.getPayment('pi_XXXXX');
-
-console.log(payment);
-// { id: 'pi_XXXXX', amount: 29.99, status: 'succeeded', customerId: 'cus_XXXXX' }
+if (payment.success) {
+  console.log('Payment successful:', payment.id);
+}
 ```
 
 ---
 
-### 3. SUBSCRIPTIONS
+## 📚 Core Features
 
-Manage recurring billing.
+### 👥 Customers
 
-**Create Subscription**
+Manage your users without the headache.
+
 ```javascript
-const subscription = await stripe.createSubscription(
-  'cus_XXXXX',      // Customer ID
-  'price_XXXXX',    // Stripe Price ID
-  { plan: 'pro' }   // Metadata (optional)
-);
+// Create
+await stripe.createCustomer('email@test.com', 'Name');
 
-console.log(subscription);
-// { success: true, id: 'sub_XXXXX', status: 'active', nextBillingDate: Date }
+// Retrieve
+const user = await stripe.getCustomer('cus_123');
+
+// Update
+await stripe.updateCustomer('cus_123', { metadata: { plan: 'pro' } });
 ```
 
-**Get Subscription**
-```javascript
-const subscription = await stripe.getSubscription('sub_XXXXX');
+### 💳 Payments
 
-console.log(subscription);
-// { id: 'sub_XXXXX', customerId: 'cus_XXXXX', status: 'active', nextBillingDate: Date }
+Simple, secure payment processing.
+
+```javascript
+// Charge a customer
+const result = await stripe.createPayment('cus_123', 50.00);
+
+// Retrieve payment details
+const details = await stripe.getPayment('pi_123');
 ```
 
-**Cancel Subscription**
-```javascript
-const result = await stripe.cancelSubscription('sub_XXXXX');
+### 📅 Subscriptions
 
-console.log(result);
-// { success: true, id: 'sub_XXXXX', status: 'canceled' }
+Handle recurring billing with ease.
+
+```javascript
+// Subscribe a user to a plan
+const sub = await stripe.createSubscription('cus_123', 'price_premium_monthly');
+
+// Cancel subscription
+await stripe.cancelSubscription('sub_123');
+
+// Get subscription status
+const status = await stripe.getSubscription('sub_123');
 ```
 
----
+### 🪝 Webhooks (The Magic Part)
 
-### 4. WEBHOOKS
+Forget about parsing raw bodies and verifying signatures manually. StripeKit handles it all.
 
-Listen to Stripe events in real-time.
-
-**Setup Handlers**
 ```javascript
-// When payment succeeds
-stripe.onPaymentSucceeded(async (payment) => {
-  console.log(`Payment received: $${payment.amount}`);
-  // payment = { paymentId, customerId, amount, status, metadata }
+// In your Express app
+app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
   
-  // Update your database
-  db.recordPayment(payment.customerId, payment.amount);
-});
+  const signature = req.headers['stripe-signature'];
+  
+  // 1. Let StripeKit verify and parse the event
+  const result = await stripe.handleWebhook(req.body, signature, 'whsec_YOUR_SECRET');
+  
+  if (!result.success) return res.status(400).send(result.error);
 
-// When payment fails
-stripe.onPaymentFailed(async (payment) => {
-  console.log(`Payment failed for ${payment.customerId}`);
-  // Send retry email, etc.
-});
+  // 2. Define clean handlers (optional)
+  stripe.onPaymentSucceeded((data) => {
+    console.log('💰 Payment received:', data.amount);
+    // Grant user access...
+  });
 
-// When subscription starts
-stripe.onSubscriptionCreated(async (sub) => {
-  console.log(`New subscription: ${sub.subscriptionId}`);
-  // Grant access, send welcome email, etc.
-});
+  stripe.onSubscriptionCreated((data) => {
+    console.log('✨ New subscriber:', data.subscriptionId);
+  });
 
-// When subscription ends
-stripe.onSubscriptionEnded(async (sub) => {
-  console.log(`Subscription canceled: ${sub.subscriptionId}`);
-  // Revoke access, send exit survey, etc.
-});
-
-// When charge is refunded
-stripe.onChargeRefunded(async (charge) => {
-  console.log(`Refund for $${charge.amount}`);
-  // Process refund in your system
-});
-```
-
-**Handle Webhook in Express**
-```javascript
-const express = require('express');
-const app = express();
-
-app.use(express.raw({type: 'application/json'}));
-
-app.post('/webhooks/stripe', async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const result = await stripe.handleWebhook(
-    req.body,
-    sig,
-    'whsec_test_YOUR_WEBHOOK_SECRET'  // From Stripe dashboard
-  );
-
-  if (result.success) {
-    res.json({ received: true });
-  } else {
-    res.status(400).json({ error: result.error });
-  }
-});
-
-app.listen(3000);
-```
-
----
-
-## API Reference
-
-### Methods
-
-#### Customers
-- `createCustomer(email, name, metadata?)` - Create a customer
-- `getCustomer(customerId)` - Retrieve a customer
-- `updateCustomer(customerId, updates)` - Update customer
-
-#### Payments
-- `createPayment(customerId, amount, currency, paymentMethodId, metadata?)` - Create a payment
-- `getPayment(paymentIntentId)` - Retrieve a payment
-
-#### Subscriptions
-- `createSubscription(customerId, priceId, metadata?)` - Create subscription
-- `getSubscription(subscriptionId)` - Retrieve subscription
-- `cancelSubscription(subscriptionId)` - Cancel subscription
-
-#### Webhooks
-- `onPaymentSucceeded(callback)` - Listen for successful payments
-- `onPaymentFailed(callback)` - Listen for failed payments
-- `onSubscriptionCreated(callback)` - Listen for new subscriptions
-- `onSubscriptionEnded(callback)` - Listen for canceled subscriptions
-- `onChargeRefunded(callback)` - Listen for refunds
-- `handleWebhook(rawBody, signature, secret)` - Process webhook
-
-### Return Values
-
-All methods return objects with this structure:
-
-**Success Response:**
-```javascript
-{
-  success: true,
-  id: 'cus_XXXXX',
-  email: 'user@example.com',
-  // ... other fields
-}
-```
-
-**Error Response:**
-```javascript
-{
-  success: false,
-  error: 'Card declined'
-}
-```
-
----
-
-## Webhook Data Format
-
-StripeKit **transforms** Stripe's webhook data into a clean format:
-
-**Payment Succeeded**
-```javascript
-stripe.onPaymentSucceeded((payment) => {
-  // payment = {
-  //   type: 'payment_intent.succeeded',
-  //   paymentId: 'pi_XXXXX',
-  //   customerId: 'cus_XXXXX',
-  //   amount: 29.99,
-  //   currency: 'usd',
-  //   status: 'succeeded',
-  //   metadata: { orderId: '123' }
-  // }
-});
-```
-
-**Subscription Created**
-```javascript
-stripe.onSubscriptionCreated((sub) => {
-  // sub = {
-  //   type: 'customer.subscription.created',
-  //   subscriptionId: 'sub_XXXXX',
-  //   customerId: 'cus_XXXXX',
-  //   status: 'active',
-  //   nextBillingDate: Date
-  // }
+  res.json({ received: true });
 });
 ```
 
 ---
 
-## API Key Licensing
-
-StripeKit includes built-in license protection.
-
-### How It Works
-
-1. **Customer purchases** → Gets API key (`sk_prod_...`)
-2. **Customer initializes SDK** → Passes API key
-3. **SDK validates** → Checks with backend
-4. **If valid** → Methods work normally
-5. **If invalid** → Methods throw errors
-
-### Using API Keys
-
-```javascript
-const stripe = new StripeKit(
-  'sk_test_YOUR_KEY',
-  'sk_prod_customer_key',  // Their license key
-  'https://api.example.com/api/validate-key'  // Validation endpoint
-);
-
-// This now validates against your backend
-const customer = await stripe.createCustomer('user@example.com', 'User');
-```
+## 🛠️ Configuration
 
 ### Development Mode
+If you don't provide a StripeKit API Key, the SDK will run in **Development Mode**.
+- You will see warning logs in your console.
+- **Use this for testing locally before purchasing a key.**
 
-For testing without a license:
-
-```javascript
-const stripe = new StripeKit('sk_test_YOUR_KEY');
-// No license key = works freely for development
-```
-
----
-
-## Complete Example
-
-```javascript
-const StripeKit = require('stripekit');
-const express = require('express');
-require('dotenv').config();
-
-const app = express();
-const stripe = new StripeKit(process.env.STRIPE_SECRET_KEY);
-
-// Create customer endpoint
-app.post('/customers', async (req, res) => {
-  const { email, name } = req.body;
-  const result = await stripe.createCustomer(email, name);
-  res.json(result);
-});
-
-// Create payment endpoint
-app.post('/payments', async (req, res) => {
-  const { customerId, amount } = req.body;
-  
-  // (Normally get paymentMethodId from frontend)
-  const result = await stripe.createPayment(
-    customerId,
-    amount,
-    'usd',
-    'pm_XXXXX'
-  );
-  
-  res.json(result);
-});
-
-// Handle Stripe webhooks
-app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const result = await stripe.handleWebhook(
-    req.body,
-    sig,
-    process.env.STRIPE_WEBHOOK_SECRET
-  );
-  res.json({ received: result.success });
-});
-
-// Webhook handlers
-stripe.onPaymentSucceeded(async (payment) => {
-  console.log(`Payment: $${payment.amount}`);
-  // Update database
-});
-
-stripe.onSubscriptionCreated(async (sub) => {
-  console.log(`New subscription: ${sub.subscriptionId}`);
-  // Grant access
-});
-
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
-```
+### Production Mode
+To remove warnings and support the project:
+1.  Go to [https://stripekit-production.up.railway.app/](https://stripekit-production.up.railway.app/)
+2.  Purchase a license ($2/mo + usage).
+3.  Pass the key to the constructor.
 
 ---
 
-## Error Handling
+## 📄 License
 
-All methods return objects with `success` and `error` fields.
-
-```javascript
-const result = await stripe.createPayment(...);
-
-if (result.success) {
-  console.log('Payment created:', result.id);
-} else {
-  console.error('Payment failed:', result.error);
-}
-```
-
-Common errors:
-- `Invalid API key` - License key is wrong or expired
-- `Card declined` - Payment method failed
-- `Invalid customer` - Customer doesn't exist
-- `Subscription not found` - Subscription ID is invalid
-
----
-
-## Testing
-
-Run the comprehensive test suite:
-
-```bash
-node test-complete.js
-```
-
-This tests:
-- ✅ Customer creation/retrieval/updates
-- ✅ Payment processing
-- ✅ Subscription management
-- ✅ Webhook handling
-- ✅ API key validation
-- ✅ Error cases
-
-Expected output: `All 10 tests passed ✅`
-
----
-
-## Stripe Test Cards
-
-Use these test cards in development:
-
-| Card | Number | Status |
-|------|--------|--------|
-| Visa (Success) | `4242 4242 4242 4242` | Always succeeds |
-| Visa (Fail) | `4000 0000 0000 9995` | Always fails |
-| Mastercard | `5555 5555 5555 4444` | Always succeeds |
-| Amex | `3782 822463 10005` | Always succeeds |
-| 3D Secure | `4000 0025 0000 3155` | Requires auth |
-
-Expiry: Any future date (e.g., 12/25)  
-CVC: Any 3-4 digits (e.g., 314)
-
----
-
-## Pricing
-
-| Plan | Price | What You Get |
-|------|-------|--------------|
-| **Free** | $0 | Open source SDK, no support |
-| **Starter** | $29/month | SDK + 5 webhook handlers + email support |
-| **Pro** | $49/month | Unlimited webhooks + priority support + analytics |
-| **Enterprise** | $99/month | Everything + custom features + SLA |
-
-Get a license: https://stripekit.com/pricing
-
----
-
-## Environment Variables
-
-Required in `.env`:
-
-```
-# Your Stripe API keys
-STRIPE_SECRET_KEY=sk_test_YOUR_KEY
-
-# For webhook handling
-STRIPE_WEBHOOK_SECRET=whsec_test_YOUR_SECRET
-
-# Server settings
-PORT=3000
-NODE_ENV=development
-```
-
----
-
-## Troubleshooting
-
-**Issue: "Invalid API key"**
-- Check your Stripe secret key
-- Make sure it's `sk_test_` (test) not `sk_live_` (production)
-- Verify it's not expired or revoked
-
-**Issue: "Card declined"**
-- Use a test card: `4242 4242 4242 4242`
-- Check that payment method is properly attached
-- Verify the amount is in cents (e.g., 2999 for $29.99)
-
-**Issue: "Subscription incomplete"**
-- Make sure the price ID exists in Stripe
-- Check that payment method is attached to customer
-- Verify subscription creation didn't fail silently
-
-**Issue: "Webhook not triggering"**
-- Make sure webhook is set up in Stripe dashboard
-- Check that endpoint is publicly accessible
-- Verify webhook secret matches your `.env` file
-
-**Issue: "License validation failing"**
-- Confirm subscription is `active` (not `incomplete` or `past_due`)
-- Verify API key starts with `sk_prod_`
-- Check that validation endpoint is running
-
----
-
-## Best Practices
-
-1. **Always use environment variables** for secrets
-   ```javascript
-   const stripe = new StripeKit(process.env.STRIPE_SECRET_KEY);
-   ```
-
-2. **Handle errors gracefully**
-   ```javascript
-   const result = await stripe.createPayment(...);
-   if (!result.success) {
-     // Show user-friendly error
-     return res.status(400).json({ error: 'Payment failed' });
-   }
-   ```
-
-3. **Store payment data carefully**
-   - Never store raw card data
-   - Store Stripe IDs, not card details
-   - Use payment methods/tokens
-
-4. **Set up webhooks**
-   - Don't rely on frontend for confirmation
-   - Webhook is the source of truth
-   - Handle duplicates gracefully
-
-5. **Test thoroughly**
-   - Use test keys during development
-   - Run test-complete.js before deploying
-   - Test with test cards
-
----
-
-## License
-
-MIT - Use freely in personal and commercial projects.
-
----
-
-**Built by developers, for developers. ❤️**
-
-Made to save you time. Questions? Ask in our Discord community.
+MIT © [StripeKit Team](https://github.com/jobrain1/stripekit)
