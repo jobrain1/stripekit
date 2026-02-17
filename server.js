@@ -74,8 +74,31 @@ app.post('/api/validate-key', async (req, res) => {
       });
     }
 
+    // Report usage for Pay As You Go plan
+    // We assume the first item is the main subscription item
+    if (activeSubscription.items && activeSubscription.items.data.length > 0) {
+      const subscriptionItem = activeSubscription.items.data[0];
+      
+      try {
+        // Record usage
+        await stripe_inst.subscriptionItems.createUsageRecord(
+          subscriptionItem.id,
+          {
+            quantity: 1,
+            timestamp: Math.floor(Date.now() / 1000),
+            action: 'increment',
+          }
+        );
+        console.log(`✅ Reported usage for customer ${customer.id} (Item: ${subscriptionItem.id})`);
+      } catch (usageError) {
+        console.error('⚠️ Failed to report usage:', usageError.message);
+        // We log the error but don't block the request, to ensure service continuity
+      }
+    }
+
     res.json({
       success: true,
+      valid: true,
       customer: customer.id,
       apiKey: apiKey,
       subscriptionStatus: activeSubscription.status
@@ -111,9 +134,6 @@ app.post('/api/create-subscription', async (req, res) => {
     }
 
     const priceIds = {
-      'starter': process.env.PRICE_ID_STARTER || 'price_starter',
-      'pro': process.env.PRICE_ID_PRO || 'price_pro',
-      'enterprise': process.env.PRICE_ID_ENTERPRISE || 'price_enterprise',
       'pay_as_you_go': process.env.PRICE_ID_PAY_AS_YOU_GO || 'price_pay_as_you_go'
     };
 
@@ -194,11 +214,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Serve pricing page
-app.get('/pricing', (req, res) => {
-  res.sendFile(path.join(__dirname, 'pricing.html'));
-});
-
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'StripeKit API is running' });
@@ -218,6 +233,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 StripeKit API running on http://localhost:${PORT}`);
   console.log(`📊 Landing page: http://localhost:${PORT}/`);
-  console.log(`💳 Pricing page: http://localhost:${PORT}/pricing`);
   console.log(`❤️  Health check: http://localhost:${PORT}/health`);
 });

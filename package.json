@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/YOUR-USERNAME/stripekit.git"
   },
-  "homepage": "https://stripekit.com",
+  "homepage": "https://stripekit-production.up.railway.app/",
   "bugs": {
     "url": "https://github.com/YOUR-USERNAME/stripekit/issues"
   },

@@ -614,9 +614,6 @@ function startCheckout(plan, price) {
   currentPrice = price;
   
   const planNames = { 
-    starter: 'Starter', 
-    pro: 'Pro', 
-    enterprise: 'Enterprise',
     pay_as_you_go: 'Pay As You Go'
   };
   document.getElementById('summary-plan').textContent = planNames[plan];

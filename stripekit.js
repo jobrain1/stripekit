@@ -16,7 +16,9 @@ class StripeKit {
 
     // Validate the API key on initialization if provided
     if (apiKey) {
-      this.validationPromise = this._validateKeyWithBackend();
+      // We don't validate on init anymore to avoid "phantom" usage.
+      // Usage will be reported on the first actual API call.
+      // this.validationPromise = this._validateKeyWithBackend();
     } else {
       // Development mode - no API key required
       console.warn('\x1b[33m%s\x1b[0m', '⚠️  WARNING: Running in development mode without a StripeKit API Key.');
@@ -61,17 +63,17 @@ class StripeKit {
   }
 
   async _checkAuthorization() {
-    // Wait for validation to complete if it's in progress
-    if (this.validationPromise && !this.validated) {
-      try {
-        await this.validationPromise;
-      } catch (error) {
-        throw error;
-      }
+    // If running in development mode (no apiKey), just return
+    if (!this.apiKey) {
+      if (this.validated) return; // Already warned
+      return;
     }
 
-    if (this.apiKey && !this.validated) {
-      throw new Error('❌ Invalid or expired API key. Please check your StripeKit credentials.');
+    // Always validate and report usage on every call
+    try {
+      await this._validateKeyWithBackend();
+    } catch (error) {
+      throw error;
     }
   }
 
