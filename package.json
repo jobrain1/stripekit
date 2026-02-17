@@ -2,7 +2,7 @@
   "name": "stripekit-sdk",
   "version": "1.0.2",
   "description": "StripeKit - Simplify Stripe integration. Clean API for payments, customers, subscriptions, and webhooks.",
-  "main": "server.js",
+  "main": "stripekit.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/YOUR-USERNAME/stripekit.git"

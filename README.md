@@ -25,6 +25,18 @@
 
 ---
 
+## Pricing: Pay As You Go
+
+StripeKit uses a simple, usage-based pricing model designed for developers.
+
+- **$0 Monthly Fee**: No recurring subscription costs.
+- **Pay As You Go**: You are charged a small fee per API call made through the SDK.
+- **Fair & Transparent**: Only pay for what you use. Perfect for startups and scaling apps.
+
+To get started, simply purchase an API Key from our [dashboard](https://stripekit-production.up.railway.app/) and you're good to go.
+
+---
+
 ## Installation
 
 ### Option 1: From NPM (When Published)
