@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const Stripe = require('stripe');
+const nodemailer = require('nodemailer');
 
 // Safely load .env without crashing if file is missing
 try {
@@ -23,6 +24,70 @@ function getStripe() {
   }
   return stripe;
 }
+
+// ============================================
+// EMAIL HELPER
+// ============================================
+const sendConfirmationEmail = async (email, name, apiKey, plan) => {
+  // Check if SMTP is configured
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+    console.warn('⚠️ SMTP not configured. Skipping email confirmation.');
+    return false;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT || 587,
+    secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"StripeKit" <noreply@stripekit.com>',
+    to: email,
+    subject: 'Welcome to StripeKit! Here is your API Key 🚀',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #6366f1; text-align: center;">Welcome to StripeKit!</h2>
+        <p>Hi ${name},</p>
+        <p>Thank you for subscribing to the <strong>${plan.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong> plan. We're excited to help you build faster!</p>
+        
+        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0; color: #4b5563; font-size: 14px;">Your Production API Key:</p>
+          <code style="display: block; margin-top: 10px; font-size: 18px; color: #111827; background: #ffffff; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px;">${apiKey}</code>
+        </div>
+
+        <p><strong>Next Steps:</strong></p>
+        <ol>
+          <li>Copy your API Key above.</li>
+          <li>Initialize StripeKit in your project:</li>
+        </ol>
+        
+        <pre style="background-color: #1e293b; color: #f8fafc; padding: 15px; border-radius: 6px; overflow-x: auto;">
+const StripeKit = require('stripekit-sdk');
+const stripe = new StripeKit(
+  'sk_test_YOUR_STRIPE_KEY',
+  '${apiKey}'
+);</pre>
+
+        <p>If you have any questions, reply to this email.</p>
+        <p>Happy coding!<br>The StripeKit Team</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`📧 Confirmation email sent to ${email}`);
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to send confirmation email:', error);
+    return false;
+  }
+};
 
 // ============================================
 // API ENDPOINTS
@@ -205,6 +270,9 @@ app.post('/api/create-subscription', async (req, res) => {
         error: 'Subscription could not be activated: ' + subscription.status
       });
     }
+
+    // Send confirmation email (don't await to avoid blocking response)
+    sendConfirmationEmail(email, name, apiKey, plan).catch(console.error);
 
     res.json({
       success: true,
