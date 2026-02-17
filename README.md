@@ -1,5 +1,7 @@
 # StripeKit - Simplify Stripe Integration
 
+> **Get your API Key here:** [https://stripekit-production.up.railway.app/](https://stripekit-production.up.railway.app/)
+
 **StripeKit** is a Node.js SDK that makes Stripe integration **10x simpler**. Stop writing boilerplate code. Start building.
 
 - ✅ Clean, intuitive API for payments, customers, and subscriptions

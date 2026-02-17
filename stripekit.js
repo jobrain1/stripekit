@@ -19,6 +19,9 @@ class StripeKit {
       this.validationPromise = this._validateKeyWithBackend();
     } else {
       // Development mode - no API key required
+      console.warn('\x1b[33m%s\x1b[0m', '⚠️  WARNING: Running in development mode without a StripeKit API Key.');
+      console.warn('\x1b[33m%s\x1b[0m', '   To unlock production features and support development, please purchase a key at:');
+      console.warn('\x1b[33m%s\x1b[0m', '   👉 https://stripekit-production.up.railway.app/');
       this.validated = true;
     }
   }
