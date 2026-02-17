@@ -20,18 +20,18 @@
 | **What It Does** | Simplifies payment processing, subscriptions, webhooks |
 | **Who Uses It** | Developers building payment features |
 | **How It Works** | Install → Initialize → Use methods |
-| **Pricing** | Pay As You Go ($0/mo + usage fees) |
+| **Pricing** | $2/mo + $0.01/call |
 | **License** | MIT - Use freely |
 
 ---
 
-## Pricing: Pay As You Go
+## Pricing: Flexible & Fair
 
-StripeKit uses a simple, usage-based pricing model designed for developers.
+StripeKit uses a hybrid pricing model designed to be affordable while scaling with you.
 
-- **$0 Monthly Fee**: No recurring subscription costs.
-- **Pay As You Go**: You are charged a small fee per API call made through the SDK.
-- **Fair & Transparent**: Only pay for what you use. Perfect for startups and scaling apps.
+- **$2.00 Monthly Base**: A small fixed cost to support maintenance.
+- **$0.01 per Call**: Usage-based pricing for every API call made through the SDK.
+- **Fair**: Only pay for what you use. Perfect for startups and growing apps.
 
 To get started, simply purchase an API Key from our [dashboard](https://stripekit-production.up.railway.app/) and you're good to go.
 

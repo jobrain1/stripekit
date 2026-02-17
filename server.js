@@ -75,24 +75,31 @@ app.post('/api/validate-key', async (req, res) => {
     }
 
     // Report usage for Pay As You Go plan
-    // We assume the first item is the main subscription item
+    // We need to find the metered item to report usage
     if (activeSubscription.items && activeSubscription.items.data.length > 0) {
-      const subscriptionItem = activeSubscription.items.data[0];
+      // Find the item that corresponds to the metered price
+      // In a real app, you might check price metadata or recurring.usage_type === 'metered'
+      const meteredItem = activeSubscription.items.data.find(item => 
+        item.price.recurring && item.price.recurring.usage_type === 'metered'
+      );
       
-      try {
-        // Record usage
-        await stripe_inst.subscriptionItems.createUsageRecord(
-          subscriptionItem.id,
-          {
-            quantity: 1,
-            timestamp: Math.floor(Date.now() / 1000),
-            action: 'increment',
-          }
-        );
-        console.log(`✅ Reported usage for customer ${customer.id} (Item: ${subscriptionItem.id})`);
-      } catch (usageError) {
-        console.error('⚠️ Failed to report usage:', usageError.message);
-        // We log the error but don't block the request, to ensure service continuity
+      if (meteredItem) {
+        try {
+          // Record usage
+          await stripe_inst.subscriptionItems.createUsageRecord(
+            meteredItem.id,
+            {
+              quantity: 1,
+              timestamp: Math.floor(Date.now() / 1000),
+              action: 'increment',
+            }
+          );
+          console.log(`✅ Reported usage for customer ${customer.id} (Item: ${meteredItem.id})`);
+        } catch (usageError) {
+          console.error('⚠️ Failed to report usage:', usageError.message);
+        }
+      } else {
+        console.warn('⚠️ No metered item found for active subscription');
       }
     }
 
@@ -134,11 +141,22 @@ app.post('/api/create-subscription', async (req, res) => {
     }
 
     const priceIds = {
-      'pay_as_you_go': process.env.PRICE_ID_PAY_AS_YOU_GO || 'price_pay_as_you_go'
+      'pay_as_you_go': {
+        base: process.env.PRICE_ID_BASE || 'price_base_2usd',
+        metered: process.env.PRICE_ID_METERED || 'price_metered_0_01'
+      }
     };
 
-    const priceId = priceIds[plan];
-    if (!priceId) {
+    let subscriptionItems = [];
+    if (plan === 'pay_as_you_go') {
+      const prices = priceIds[plan];
+      subscriptionItems = [
+        { price: prices.base },
+        { price: prices.metered }
+      ];
+    }
+
+    if (subscriptionItems.length === 0) {
       return res.status(400).json({
         success: false,
         error: 'Invalid plan selected'
@@ -173,7 +191,7 @@ app.post('/api/create-subscription', async (req, res) => {
     // Create subscription
     const subscription = await stripe_inst.subscriptions.create({
       customer: customer.id,
-      items: [{ price: priceId }],
+      items: subscriptionItems,
       payment_behavior: 'error_if_incomplete',
       payment_settings: {
         save_default_payment_method: 'on_subscription'
