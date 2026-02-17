@@ -113,7 +113,8 @@ app.post('/api/create-subscription', async (req, res) => {
     const priceIds = {
       'starter': process.env.PRICE_ID_STARTER || 'price_starter',
       'pro': process.env.PRICE_ID_PRO || 'price_pro',
-      'enterprise': process.env.PRICE_ID_ENTERPRISE || 'price_enterprise'
+      'enterprise': process.env.PRICE_ID_ENTERPRISE || 'price_enterprise',
+      'pay_as_you_go': process.env.PRICE_ID_PAY_AS_YOU_GO || 'price_pay_as_you_go'
     };
 
     const priceId = priceIds[plan];

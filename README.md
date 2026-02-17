@@ -20,7 +20,7 @@
 | **What It Does** | Simplifies payment processing, subscriptions, webhooks |
 | **Who Uses It** | Developers building payment features |
 | **How It Works** | Install → Initialize → Use methods |
-| **Pricing** | Starter ($29/mo), Pro ($49/mo), Enterprise ($99/mo) |
+| **Pricing** | Pay As You Go ($0/mo + usage fees) |
 | **License** | MIT - Use freely |
 
 ---
