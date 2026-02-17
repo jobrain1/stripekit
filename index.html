@@ -600,13 +600,32 @@ Live on NPM
 </footer>
 
 <script>
-const stripe = Stripe('pk_test_51RJsbiPEx5wbrbU8MWm0CjlthScr3bPkAtcW6hnfwEYc13pys1XKL7U0LmR1Ua8fzWRAZBK0KVteKCV5ymXKhP6800A48RX5Gn');
+let stripe;
 let elements;
 let cardElement;
 let currentPlan = null;
 let currentPrice = null;
 
-function initStripe() {
+// Fetch the Publishable Key from the server
+async function initializeStripe() {
+  try {
+    const response = await fetch('/api/config');
+    const { publishableKey } = await response.json();
+    if (publishableKey) {
+      stripe = Stripe(publishableKey);
+    } else {
+      console.error('Stripe Publishable Key not found');
+    }
+  } catch (error) {
+    console.error('Failed to load Stripe configuration:', error);
+  }
+}
+
+// Call initialization on load
+initializeStripe();
+
+function initStripeElements() {
+  if (!stripe) return;
   if (!elements) {
     elements = stripe.elements();
     cardElement = elements.create('card');
@@ -614,6 +633,11 @@ function initStripe() {
 }
 
 function startCheckout(plan, price) {
+  if (!stripe) {
+    alert('Stripe is not initialized. Please check your configuration.');
+    return;
+  }
+  
   currentPlan = plan;
   currentPrice = price;
   
@@ -628,9 +652,10 @@ function startCheckout(plan, price) {
   document.getElementById('success-message').style.display = 'none';
   document.getElementById('error-message').classList.add('hidden');
   
-  initStripe();
-  if (cardElement && cardElement.mount) {
-    setTimeout(() => cardElement.mount('#card-element'), 0);
+  initStripeElements();
+  if (cardElement) {
+    // Slight delay to ensure modal is visible before mounting
+    setTimeout(() => cardElement.mount('#card-element'), 100);
   }
   
   document.getElementById('email').value = '';
@@ -658,6 +683,8 @@ async function handleSubmit() {
   document.getElementById('submit-text').textContent = 'Processing...';
   
   try {
+    initStripeElements();
+    
     const { paymentMethod, error } = await stripe.createPaymentMethod({
       type: 'card',
       card: cardElement,
