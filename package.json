@@ -1,44 +1,28 @@
 {
   "name": "stripekit-sdk",
-  "version": "1.1.1",
-  "description": "StripeKit - Simplify Stripe integration. Clean API for payments, customers, subscriptions, and webhooks.",
+  "version": "1.2.0",
+  "description": "StripeKit - Free and Open Source Stripe Wrapper for easier integration.",
   "main": "stripekit.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jobrain1/stripekit"
-  },
-  "homepage": "https://stripekit-production.up.railway.app/",
-  "bugs": {
-    "url": "https://github.com/jobrain1/stripekit/issues"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "url": "git+https://github.com/jobrain1/stripekit.git"
   },
   "keywords": [
     "stripe",
     "payments",
-    "payment-processing",
     "sdk",
-    "webhooks",
-    "subscriptions",
-    "recurring-billing",
-    "payment-gateway",
-    "stripe-api",
+    "wrapper",
     "nodejs"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Jonas",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "nodemailer": "^8.0.1",
-    "stripe": "^13.0.0"
+    "stripe": "^13.11.0"
   },
   "devDependencies": {
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "nodemon": "^3.0.1"
+    "dotenv": "^16.3.1"
   }
 }
